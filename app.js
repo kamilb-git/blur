@@ -14,6 +14,7 @@ function startVideo() {
     video.addEventListener('play', () => {
     
         
+        
         const displaySize = { width: video.width, height: video.height }
         faceapi.matchDimensions(canvas, displaySize)
         
