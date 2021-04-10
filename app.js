@@ -1,5 +1,6 @@
 const video = document.getElementById('video');
 
+
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
   faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
@@ -11,44 +12,64 @@ function startVideo() {
     const canvas = faceapi.createCanvasFromMedia(video);
     document.body.append(canvas);
 
-    video.addEventListener('play', () => {
+    const ctx = canvas.getContext("2d");
+
+    document.body.onkeypress = function(e){
+      if(e.which == 32){  
+        e.preventDefault(); 
+        play_pause_video();
+     }
+   } 
+
+    video.addEventListener('playing', () => {
     
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(canvas, displaySize);
         
-        
-        const displaySize = { width: video.width, height: video.height }
-        faceapi.matchDimensions(canvas, displaySize)
-        
-        setInterval(async () => {
+        const interval = setInterval(async () => {
             const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks()
-            const resizedDetections = faceapi.resizeResults(detections, displaySize)
-            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-            faceapi.draw.drawDetections(canvas, resizedDetections)
-            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
             
-        }, 100)
-})
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            //faceapi.draw.drawDetections(canvas, resizedDetections);
+            //faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            
+            try{
+              var x = detections[0].detection.box.x;
+              var y = detections[0].detection.box.y;
+
+              var w = detections[0].detection.box.width;
+              var h = detections[0].detection.box.height;
+              }
+            catch(e){
+              return; 
+            }
+
+            ctx.fillStyle = '#000000 '
+            ctx.filter = 'blur(15px)';   
+            ctx.fillRect(x - 10, y - 40 , w + 20, h + 40);
+            
+            //console.log(detections[0].detection.box.x );
+    
+          }, 100)
+       
+        })
 
 }
 
 
-document.body.onkeypress = function(e){
-    if(e.which == 32){  
 
-     e.preventDefault(); 
-     console.log('git') ;
-     play_pause_video();
-   }
- } 
- 
- function play_pause_video() {
+function play_pause_video() {
   if (video.paused) 
   { 
-   video.play(); 
- }
+    video.play(); 
+  }
  else 
- { 
-  video.pause(); 
- }
+  { 
+    video.pause(); 
+  }
  }
 
 
